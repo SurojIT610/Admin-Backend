@@ -59,15 +59,16 @@ const UserSchema = new mongoose.Schema({
         paymentId: {
             type: String,
             required: true
-        },
-        // Additional payment info fields can be added here
-    }]
-},{
-    versionKey:false,
-});
+        }
+    }],
+    role: {
+        type: String,
+        enum: ['ADMIN', 'USER', 'SELLER'],
+        default: 'USER' // Default to 'USER' if not specified
+    }
+}, { versionKey: false });
 
 // Create a model using the schema
-const UserModel = mongoose.model('UserModel', UserSchema, 'user' );
+const UserModel = mongoose.model('UserModel', UserSchema, 'user');
 
 module.exports = UserModel;
-console.log(`User schema ready to use`)

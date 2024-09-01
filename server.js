@@ -9,6 +9,7 @@ const productRoutes = require("./Routes/ProductRoutes/productRoutes"); // Adjust
 
 const con = require("./db_connect/connect"); // Ensure you have a connection setup if needed
 const expAdmin = require("./Routes/AdminRoutes/AdminRoutes");
+const expSeller = require("./Routes/SellerRoutes/sellerRoutes");
 const PORT = process.env.PORT || 5000;
 
 // Set up all middlewares
@@ -22,6 +23,9 @@ app.use('/api/v1', exp);
 app.use(`/api/product`,productRoutes)
 // defining Admin Pathes
 app.use(`/admin`,expAdmin)
+
+// defining seller path
+app.use(`/seller`,expSeller)
 
 
 // Initial point of entry

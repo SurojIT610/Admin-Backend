@@ -1,11 +1,5 @@
 const ProductModel = require('../../Model/ProductModel'); // Adjust the path as necessary
 
-/**
- * Create a new product.
- * @param {Object} req - The request object containing the product details.
- * @param {Object} res - The response object used to send the response.
- */
-
 // Product Creating Controller
 const createProduct = async (req, res) => {
     const {
@@ -26,10 +20,18 @@ const createProduct = async (req, res) => {
         sales
     } = req.body;
 
+    const userId = req.user._id; // Get the user ID from the authenticated user
+    const userRole = req.user.role; // Get the user's role
+
     try {
         // Validate required fields
         if (!name || !description || !price || !stock || !imageUrl) {
             return res.status(400).json({ message: 'Required fields are missing' });
+        }
+
+        // Check if the user is authorized to create a product
+        if (userRole !== 'ADMIN' && userRole !== 'SELLER') {
+            return res.status(403).json({ message: 'Access denied. You are not authorized to create a product.' });
         }
 
         // Create a new product
@@ -48,7 +50,8 @@ const createProduct = async (req, res) => {
             warranty,
             manufacturer,
             supplier,
-            sales
+            sales,
+            sellerId: userRole === 'SELLER' ? userId : undefined // Only set sellerId if user is a seller
         });
 
         // Save the new product to the database
@@ -64,36 +67,37 @@ const createProduct = async (req, res) => {
     }
 };
 
-
-
-// product updating controller
-
+// Product Updating Controller
 const updateProduct = async (req, res) => {
-    const { productId } = req.params; // Get product ID from route parameters
+    const { id } = req.params; // Get product ID from route parameters
     const updateData = req.body; // Get the updated data from request body
+    const userId = req.user._id; // Get the user ID from the authenticated user
+    const userRole = req.user.role; // Get the user's role
 
     try {
         // Validate required fields
-        if (!productId) {
+        if (!id) {
             return res.status(400).json({ message: 'Product ID is required' });
         }
 
-        // Assuming you have middleware to check if user is an admin
-        if (!req.user || req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Access denied. Admins only.' });
+        // Find the product to check if it exists and who created it
+        const product = await ProductModel.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if the current user is the seller who created the product or an admin
+        if (userRole !== 'ADMIN' && product.sellerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: 'Access denied. You are not authorized to update this product.' });
         }
 
         // Find and update the product
         const updatedProduct = await ProductModel.findByIdAndUpdate(
-            productId,
+            id,
             updateData,
             { new: true, runValidators: true } // Return the updated document and run validators
         );
-
-        // Check if product was found
-        if (!updatedProduct) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
 
         // Respond with the updated product data
         return res.status(200).json(updatedProduct);
@@ -105,9 +109,44 @@ const updateProduct = async (req, res) => {
     }
 };
 
+// Delete Product Controller
+const deleteProduct = async (req, res) => {
+    const { id } = req.params; // Get product ID from route parameters
+    const userId = req.user._id; // Get the user ID from the authenticated user
+    const userRole = req.user.role; // Get the user's role
 
-// get all products
+    try {
+        // Validate required fields
+        if (!id) {
+            return res.status(400).json({ message: 'Product ID is required' });
+        }
 
+        // Find the product to check if it exists and who created it
+        const product = await ProductModel.findById(id);
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if the current user is the seller who created the product or an admin
+        if (userRole !== 'ADMIN' && product.sellerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: 'Access denied. You are not authorized to delete this product.' });
+        }
+
+        // Find and delete the product
+        const deletedProduct = await ProductModel.findByIdAndDelete(id);
+
+        // Respond with a success message
+        return res.status(200).json({ message: 'Product deleted successfully' });
+
+    } catch (error) {
+        // Handle any errors
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Get All Products Controller
 const getAllProducts = async (req, res) => {
     try {
         // Retrieve all products from the database
@@ -123,4 +162,4 @@ const getAllProducts = async (req, res) => {
     }
 };
 
-module.exports = { createProduct,updateProduct,getAllProducts};
+module.exports = { createProduct, updateProduct, deleteProduct, getAllProducts };

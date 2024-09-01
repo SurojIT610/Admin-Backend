@@ -104,6 +104,10 @@ const ProductSchema = new mongoose.Schema({
             default: null
         }
     },
+    sellerId: {
+        type: mongoose.Schema.Types.ObjectId, // Reference to the User model
+        required: false // Only required if the user is a seller
+    },
     createdAt: {
         type: Date,
         default: Date.now
