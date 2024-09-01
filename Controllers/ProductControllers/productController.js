@@ -17,11 +17,10 @@ const createProduct = async (req, res) => {
         warranty,
         manufacturer,
         supplier,
-        sales
+        sales,
+        sellerId, // Assume sellerId is passed for testing
+        role // Assume role is passed for testing
     } = req.body;
-
-    const userId = req.user._id; // Get the user ID from the authenticated user
-    const userRole = req.user.role; // Get the user's role
 
     try {
         // Validate required fields
@@ -30,7 +29,7 @@ const createProduct = async (req, res) => {
         }
 
         // Check if the user is authorized to create a product
-        if (userRole !== 'ADMIN' && userRole !== 'SELLER') {
+        if (role !== 'ADMIN' && role !== 'SELLER') {
             return res.status(403).json({ message: 'Access denied. You are not authorized to create a product.' });
         }
 
@@ -51,7 +50,7 @@ const createProduct = async (req, res) => {
             manufacturer,
             supplier,
             sales,
-            sellerId: userRole === 'SELLER' ? userId : undefined // Only set sellerId if user is a seller
+            sellerId: role === 'SELLER' ? sellerId : undefined // Only set sellerId if user is a seller
         });
 
         // Save the new product to the database
@@ -71,8 +70,7 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     const { id } = req.params; // Get product ID from route parameters
     const updateData = req.body; // Get the updated data from request body
-    const userId = req.user._id; // Get the user ID from the authenticated user
-    const userRole = req.user.role; // Get the user's role
+    const { sellerId, role } = req.body; // Get sellerId and role from request body
 
     try {
         // Validate required fields
@@ -80,15 +78,20 @@ const updateProduct = async (req, res) => {
             return res.status(400).json({ message: 'Product ID is required' });
         }
 
-        // Find the product to check if it exists and who created it
+        // Find the product to check if it exists
         const product = await ProductModel.findById(id);
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // Check if the current user is the seller who created the product or an admin
-        if (userRole !== 'ADMIN' && product.sellerId.toString() !== userId.toString()) {
+        // Check if sellerId and role are provided
+        if (!sellerId || !role) {
+            return res.status(400).json({ message: 'Seller ID and role are required' });
+        }
+
+        // Check if the user is authorized to update the product
+        if (role !== 'ADMIN' && product.sellerId.toString() !== sellerId.toString()) {
             return res.status(403).json({ message: 'Access denied. You are not authorized to update this product.' });
         }
 
@@ -109,11 +112,12 @@ const updateProduct = async (req, res) => {
     }
 };
 
+
+
 // Delete Product Controller
 const deleteProduct = async (req, res) => {
     const { id } = req.params; // Get product ID from route parameters
-    const userId = req.user._id; // Get the user ID from the authenticated user
-    const userRole = req.user.role; // Get the user's role
+    const { sellerId, role } = req.body; // Get sellerId and role from request body
 
     try {
         // Validate required fields
@@ -121,30 +125,43 @@ const deleteProduct = async (req, res) => {
             return res.status(400).json({ message: 'Product ID is required' });
         }
 
-        // Find the product to check if it exists and who created it
+        // Find the product to check if it exists
         const product = await ProductModel.findById(id);
 
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // Check if the current user is the seller who created the product or an admin
-        if (userRole !== 'ADMIN' && product.sellerId.toString() !== userId.toString()) {
+        // Check if sellerId and role are provided
+        if (!sellerId || !role) {
+            return res.status(400).json({ message: 'Seller ID and role are required' });
+        }
+
+        // Check if sellerId and product.sellerId are defined and not null
+        if (!product.sellerId) {
+            console.error('Product sellerId is missing');
+            return res.status(500).json({ message: 'Product sellerId is missing' });
+        }
+
+        // Check if the user is authorized to delete the product
+        if (role !== 'ADMIN' && product.sellerId.toString() !== sellerId.toString()) {
             return res.status(403).json({ message: 'Access denied. You are not authorized to delete this product.' });
         }
 
         // Find and delete the product
-        const deletedProduct = await ProductModel.findByIdAndDelete(id);
+        await ProductModel.findByIdAndDelete(id);
 
         // Respond with a success message
         return res.status(200).json({ message: 'Product deleted successfully' });
 
     } catch (error) {
         // Handle any errors
-        console.error(error);
+        console.error('Error in deleteProduct:', error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
+
 
 // Get All Products Controller
 const getAllProducts = async (req, res) => {
@@ -161,5 +178,6 @@ const getAllProducts = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 module.exports = { createProduct, updateProduct, deleteProduct, getAllProducts };

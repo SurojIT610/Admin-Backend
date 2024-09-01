@@ -74,4 +74,50 @@ const userlogin = async (req, res) => {
     }
 };
 
-module.exports = { userSignup, userlogin };
+
+
+
+const updateUser = async (req, res) => {
+    const userId = req.user._id; // Get the user ID from the authenticated user
+    const { fname, lname, email, address, password } = req.body;
+
+    try {
+        // Find the user to update
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update fields if provided
+        if (fname) user.name.fname = fname;
+        if (lname) user.name.lname = lname;
+        if (email) user.email = email;
+        if (address) user.address = address;
+        
+        // Update password if provided
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user.password = hashedPassword;
+        }
+
+        // Save the updated user data
+        const updatedUser = await user.save();
+
+        // Respond with the updated user data
+        return res.status(200).json({
+            message: 'User updated successfully',
+            user: {
+                email: updatedUser.email,
+                name: updatedUser.name,
+                address: updatedUser.address,
+            }
+        });
+
+    } catch (error) {
+        // Handle any errors
+        console.error(error, 'Error in updateUser controller');
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { userSignup, userlogin,updateUser };

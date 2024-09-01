@@ -1,20 +1,15 @@
 const express = require('express');
 const expSeller = express.Router();
-const { createProduct, updateProduct, deleteProduct, getAllProducts } = require('../../Controllers/ProductControllers/productController');
-// const authenticate = require('../../middleware/authenticate'); // Middleware for authentication
-// const authorize = require('../../middleware/authorize'); // Middleware for role-based authorization
+const { sellerManageOrder, sellerGetAllOrders } = require('../../Controllers/SellerController/SellerOrderManage');
+const { createProduct, deleteProduct } = require('../../Controllers/ProductControllers/productController');
+// const authenticateUser = require('../../middleware/authenticateUser'); // Ensure this middleware is in place
 
-// Route to create a product (accessible by ADMIN and SELLER)
-// router.post('/create-product', authenticate, authorize(['ADMIN', 'SELLER']), createProduct);
-expSeller.post('/create-product', createProduct);
+// Seller routes
+expSeller.post('/orders/:id',  sellerManageOrder);
+expSeller.get('/orders',  sellerGetAllOrders);
 
-// Route to update a product (accessible by ADMIN and the seller who created the product)
-expSeller.patch('/update-product/:id',  updateProduct);
+expSeller.post(`/create-products`, createProduct)
 
-// Route to delete a product (accessible by ADMIN and the seller who created the product)
-expSeller.delete('/delete-product/:id', deleteProduct);
-
-// Route to get all products (accessible by all authenticated users)
-expSeller.get('/get-products',  getAllProducts);
+expSeller.delete(`/delete/:id`,deleteProduct)
 
 module.exports = expSeller;

@@ -16,7 +16,7 @@ expAdmin.get('/orders', getAllOrders);
 expAdmin.get('/products', getAllProducts);
 
 // Define the route for deleting a product
-expAdmin.delete('/products/:id', deleteProduct); // DELETE for deleting a product
+expAdmin.delete('/delete/:id', deleteProduct); // DELETE for deleting a product
 
 
 

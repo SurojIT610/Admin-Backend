@@ -1,32 +1,10 @@
 const OrderModel = require('../../Model/OrderModel'); // Adjust the path as necessary
 
-const getAllOrders = async (req, res) => {
-    try {
-        // Retrieve all orders
-        const orders = await OrderModel.find({})
-            .populate('user', 'fname lname email') // Populate user details
-            .populate('products.product', 'name price') // Populate product details
-            .exec();
-
-        if (!orders.length) {
-            return res.status(404).json({ message: 'No orders found' });
-        }
-
-        return res.status(200).json(orders);
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Server error' });
-    }
-};
-
-
-
-
-// Admin Manage Order Controller
-const adminManageOrder = async (req, res) => {
+// Seller Manage Order Controller
+const sellerManageOrder = async (req, res) => {
     const { id } = req.params; // Get order ID from route parameters
     const { action, ...updateData } = req.body; // Get action type and updated data from request body
+    const userId = req.user._id; // Get the user ID from the authenticated user
 
     try {
         // Validate required fields
@@ -39,6 +17,11 @@ const adminManageOrder = async (req, res) => {
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Check if the seller is authorized to update or cancel this order
+        if (order.sellerId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: 'Access denied. You are not authorized to manage this order.' });
         }
 
         // Determine action type and update or cancel the order
@@ -74,4 +57,22 @@ const adminManageOrder = async (req, res) => {
 };
 
 
-module.exports = { getAllOrders,adminManageOrder};
+// Seller Get All Orders Controller
+const sellerGetAllOrders = async (req, res) => {
+    const userId = req.user._id; // Get the user ID from the authenticated user
+
+    try {
+        // Retrieve all orders related to the seller
+        const orders = await OrderModel.find({ sellerId: userId });
+
+        // Respond with the list of orders
+        return res.status(200).json(orders);
+
+    } catch (error) {
+        // Handle any errors
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { sellerManageOrder ,sellerGetAllOrders};
