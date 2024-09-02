@@ -1,3 +1,4 @@
+const UserModel = require("../../Model/UserModel");
 const userModel = require("../../Model/UserModel"); // Adjust path as necessary
 const bcrypt = require('bcrypt');
 
@@ -18,12 +19,12 @@ const userSignup = async (req, res) => {
         // Create a new user
         const newUser = new userModel({
             name: {
-                fname,
-                lname
+                fname: fname,
+                lname: lname
             },
-            email,
+            email: email,
             password: hashedPassword,
-            address // Directly assigning address from request body
+            address: address
         });
 
         // Save the new user to the database
@@ -78,12 +79,12 @@ const userlogin = async (req, res) => {
 
 
 const updateUser = async (req, res) => {
-    const userId = req.user._id; // Get the user ID from the authenticated user
+    const userId = req.params.id; // Get the user ID from the request parameters
     const { fname, lname, email, address, password } = req.body;
 
     try {
         // Find the user to update
-        const user = await userModel.findById(userId);
+        const user = await UserModel.findById(userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -118,6 +119,6 @@ const updateUser = async (req, res) => {
         console.error(error, 'Error in updateUser controller');
         return res.status(500).json({ message: 'Server error' });
     }
-};
+}
 
 module.exports = { userSignup, userlogin,updateUser };

@@ -9,36 +9,39 @@ const UserModel = require('../../Model/UserModel'); // Adjust the path as necess
 //  * @param {Object} res - The response object used to send the response.
 //  */
 const createOrder = async (req, res) => {
-    const { user_id, products, paymentInfo, shippingAddress } = req.body;
+    const { user, products, paymentInfo, shippingAddress } = req.body;
 
     try {
-        // Check if user_id is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(user_id)) {
+        // Log received user ID
+        console.log('Received user ID:', user);
+
+        // Check if user ID is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(user)) {
             return res.status(400).json({ message: 'Invalid user ID format' });
         }
 
         // Verify that the user exists
-        const user = await UserModel.findById(user_id);
-        if (!user) {
+        const userDoc = await UserModel.findById(user);
+        if (!userDoc) {
             return res.status(404).json({ message: 'User not found' });
         }
 
         // Verify that each product exists and is valid
         for (const product of products) {
-            if (!mongoose.Types.ObjectId.isValid(product.productId)) {
-                return res.status(400).json({ message: `Invalid product ID format: ${product.productId}` });
+            if (!mongoose.Types.ObjectId.isValid(product.product)) {
+                return res.status(400).json({ message: `Invalid product ID format: ${product.product}` });
             }
-            const prod = await ProductModel.findById(product.productId);
+            const prod = await ProductModel.findById(product.product);
             if (!prod) {
-                return res.status(404).json({ message: `Product with ID ${product.productId} not found` });
+                return res.status(404).json({ message: `Product with ID ${product.product} not found` });
             }
         }
 
         // Create the order
         const newOrder = new OrderModel({
-            user: user_id,
+            user,
             products: products.map(product => ({
-                product: product.productId,
+                product: product.product,
                 quantity: product.quantity,
                 price: product.price
             })),
@@ -55,5 +58,6 @@ const createOrder = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 module.exports = { createOrder };

@@ -6,17 +6,17 @@ const { getUserOrderHistory } = require('../../Controllers/OrderController/Order
 const exp = express.Router();
 
 // Use POST for sign-in and sign-up
-exp.post('/sign-in', userlogin);
-exp.post('/sign-up', userSignup);
+exp.post('/sign-in', userlogin);  // CHECKED
+exp.post('/sign-up', userSignup);  // CHECKED
 
-exp.post(`/place-order`,createOrder)
+exp.post(`/place-order`,createOrder)  // CHECKED
 
 
 // updating user data
 
-exp.patch('/update',  updateUser);
+exp.patch('/update/:id',  updateUser);  // CHECKED
 
 // Route for users to get their order history
-exp.get('/order-history/:userId', getUserOrderHistory);
+exp.get('/order-history/:userId', getUserOrderHistory); // CHECKED
 
 module.exports = exp;

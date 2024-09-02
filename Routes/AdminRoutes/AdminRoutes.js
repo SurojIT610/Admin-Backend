@@ -4,19 +4,19 @@ const { updateProduct, createProduct, getAllProducts, deleteProduct } = require(
 const expAdmin = express.Router();
 
 // Define the route for creating a product
-expAdmin.post('/products', createProduct); // POST for creating products
+expAdmin.post('/products', createProduct); // POST for creating products {working fine} // CHECKED
 
 // Define the route for partially updating a product
-expAdmin.patch('/products/:id', updateProduct); // PATCH for updating specific fields
+expAdmin.patch('/products/:id', updateProduct); // PATCH for updating specific fields // CHECKED
 
 // Define the route for getting all orders
-expAdmin.get('/orders', getAllOrders);
+expAdmin.get('/orders', getAllOrders); //{working fine} // CHECKED
 
 // Optional: Define the route for getting all products (if needed)
-expAdmin.get('/products', getAllProducts);
+expAdmin.get('/products', getAllProducts);  //{working fine} // CHECKED
 
 // Define the route for deleting a product
-expAdmin.delete('/delete/:id', deleteProduct); // DELETE for deleting a product
+expAdmin.delete('/delete-product/:id', deleteProduct); // DELETE for deleting a product // CHECKED
 
 
 

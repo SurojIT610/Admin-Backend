@@ -4,7 +4,7 @@ const {getAllProducts } = require('../../Controllers/ProductControllers/productC
 const router = express.Router();
 
 
-router.get('/', getAllProducts); // Using get for all products
+router.get('/', getAllProducts);  //  CHECKED
 
 
 module.exports = router;

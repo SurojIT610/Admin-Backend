@@ -37,3 +37,14 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on Port number ${PORT}`);
 });
+
+
+
+// const mongoose = require('mongoose');
+
+// // Test valid and invalid ObjectIds
+// const validId = '66d5425e564653f01748b652'; // Example valid ObjectId
+// const invalidId = '123'; // Example invalid ObjectId
+
+// console.log('Valid ID test:', mongoose.Types.ObjectId.isValid(validId)); // Should print `true`
+// console.log('Invalid ID test:', mongoose.Types.ObjectId.isValid(invalidId)); // Should print `false`

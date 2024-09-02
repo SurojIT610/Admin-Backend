@@ -85,13 +85,29 @@ const updateProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
+        // Validate and cast sellerId if it's provided
+        if (sellerId) {
+            if (!mongoose.Types.ObjectId.isValid(sellerId)) {
+                return res.status(400).json({ message: 'Invalid Seller ID format' });
+            }
+        }
+
         // Check if sellerId and role are provided
-        if (!sellerId || !role) {
-            return res.status(400).json({ message: 'Seller ID and role are required' });
+        if (typeof role === 'undefined') {
+            return res.status(400).json({ message: 'Role is required' });
+        }
+
+        // Ensure sellerId and role are of the expected type
+        if (sellerId && typeof sellerId !== 'string') {
+            return res.status(400).json({ message: 'Seller ID must be a string' });
+        }
+        if (typeof role !== 'string') {
+            return res.status(400).json({ message: 'Role must be a string' });
         }
 
         // Check if the user is authorized to update the product
-        if (role !== 'ADMIN' && product.sellerId.toString() !== sellerId.toString()) {
+        // Handle case where product.sellerId might be undefined
+        if (role !== 'ADMIN' && (product.sellerId && product.sellerId.toString() !== sellerId)) {
             return res.status(403).json({ message: 'Access denied. You are not authorized to update this product.' });
         }
 
@@ -114,6 +130,7 @@ const updateProduct = async (req, res) => {
 
 
 
+
 // Delete Product Controller
 const deleteProduct = async (req, res) => {
     const { id } = req.params; // Get product ID from route parameters
@@ -132,28 +149,31 @@ const deleteProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found' });
         }
 
-        // Check if sellerId and role are provided
-        if (!sellerId || !role) {
-            return res.status(400).json({ message: 'Seller ID and role are required' });
-        }
-
-        // Check if sellerId and product.sellerId are defined and not null
-        if (!product.sellerId) {
-            console.error('Product sellerId is missing');
-            return res.status(500).json({ message: 'Product sellerId is missing' });
+        // Check if role is provided
+        if (!role) {
+            return res.status(400).json({ message: 'Role is required' });
         }
 
         // Check if the user is authorized to delete the product
-        if (role !== 'ADMIN' && product.sellerId.toString() !== sellerId.toString()) {
-            return res.status(403).json({ message: 'Access denied. You are not authorized to delete this product.' });
+        if (role === 'ADMIN') {
+            // Admin can delete any product
+            await ProductModel.findByIdAndDelete(id);
+            return res.status(200).json({ message: 'Product deleted successfully' });
+        } else if (role === 'SELLER') {
+            // Seller can only delete their own products
+            if (!sellerId) {
+                return res.status(400).json({ message: 'Seller ID is required for SELLER role' });
+            }
+
+            if (product.sellerId.toString() !== sellerId.toString()) {
+                return res.status(403).json({ message: 'Access denied. You are not authorized to delete this product.' });
+            }
+
+            await ProductModel.findByIdAndDelete(id);
+            return res.status(200).json({ message: 'Product deleted successfully' });
+        } else {
+            return res.status(403).json({ message: 'Access denied. Invalid role.' });
         }
-
-        // Find and delete the product
-        await ProductModel.findByIdAndDelete(id);
-
-        // Respond with a success message
-        return res.status(200).json({ message: 'Product deleted successfully' });
-
     } catch (error) {
         // Handle any errors
         console.error('Error in deleteProduct:', error);
