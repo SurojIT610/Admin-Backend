@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Define the Product Schema
 const ProductSchema = new mongoose.Schema({
-    name: {
+    title: {
         type: String,
         required: true,
         trim: true
@@ -17,10 +17,10 @@ const ProductSchema = new mongoose.Schema({
         required: true,
         min: 0 // Ensure price is not negative
     },
-    stock: {
+    discountPercentage: {
         type: Number,
-        required: true,
-        min: 0 // Ensure stock is not negative
+        default: 0,
+        min: 0 // Ensure discount percentage is not negative
     },
     rating: {
         type: Number,
@@ -28,9 +28,14 @@ const ProductSchema = new mongoose.Schema({
         min: 0,
         max: 5 // Assuming a rating scale from 0 to 5
     },
-    imageUrl: {
-        type: String,
+    stock: {
+        type: Number,
         required: true,
+        min: 0 // Ensure stock is not negative
+    },
+    images: [String], // Array of image URLs
+    thumbnail: {
+        type: String,
         trim: true
     },
     category: {
@@ -42,12 +47,16 @@ const ProductSchema = new mongoose.Schema({
         trim: true
     },
     tags: [String], // Array of tags or keywords related to the product
+    sku: {
+        type: String,
+        trim: true
+    },
+    weight: {
+        type: Number,
+        default: 0,
+        min: 0 // Ensure weight is non-negative
+    },
     dimensions: {
-        length: {
-            type: Number,
-            default: 0,
-            min: 0 // Ensure length is non-negative
-        },
         width: {
             type: Number,
             default: 0,
@@ -58,63 +67,77 @@ const ProductSchema = new mongoose.Schema({
             default: 0,
             min: 0 // Ensure height is non-negative
         },
-        unit: {
-            type: String,
-            default: 'cm', // Default unit of measurement
-            enum: ['cm', 'm', 'inch'] // Allowed units
+        depth: {
+            type: Number,
+            default: 0,
+            min: 0 // Ensure depth is non-negative
         }
     },
-    weight: {
-        type: Number,
-        default: 0,
-        min: 0 // Ensure weight is non-negative
-    },
-    warranty: {
+    warrantyInformation: {
         type: String,
         trim: true
     },
-    manufacturer: {
-        name: {
-            type: String,
-            trim: true
-        },
-        contact: {
-            type: String,
-            trim: true
-        }
+    shippingInformation: {
+        type: String,
+        trim: true
     },
-    supplier: {
-        name: {
-            type: String,
-            trim: true
-        },
-        contact: {
-            type: String,
-            trim: true
-        }
+    availabilityStatus: {
+        type: String,
+        trim: true
     },
-    sales: {
-        totalSales: {
-            type: Number,
-            default: 0,
-            min: 0 // Ensure total sales is non-negative
-        },
-        lastSold: {
+    returnPolicy: {
+        type: String,
+        trim: true
+    },
+    minimumOrderQuantity: {
+        type: Number,
+        default: 1,
+        min: 1 // Ensure minimum order quantity is positive
+    },
+    meta: {
+        createdAt: {
             type: Date,
-            default: null
+            default: Date.now
+        },
+        updatedAt: {
+            type: Date,
+            default: Date.now
+        },
+        barcode: {
+            type: String,
+            trim: true
+        },
+        qrCode: {
+            type: String,
+            trim: true
         }
     },
+    reviews: [{
+        rating: {
+            type: Number,
+            min: 0,
+            max: 5 // Assuming a rating scale from 0 to 5
+        },
+        comment: {
+            type: String,
+            trim: true
+        },
+        date: {
+            type: Date,
+            default: Date.now
+        },
+        reviewerName: {
+            type: String,
+            trim: true
+        },
+        reviewerEmail: {
+            type: String,
+            trim: true
+        }
+    }],
     sellerId: {
         type: mongoose.Schema.Types.ObjectId, // Reference to the User model
         required: false // Only required if the user is a seller
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
     }
 }, { versionKey: false });
 

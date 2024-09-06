@@ -3,28 +3,34 @@ const ProductModel = require('../../Model/ProductModel'); // Adjust the path as 
 // Product Creating Controller
 const createProduct = async (req, res) => {
     const {
-        name,
+        title,
         description,
         price,
-        stock,
+        discountPercentage,
         rating,
-        imageUrl,
+        stock,
+        images,
+        thumbnail,
         category,
         brand,
         tags,
-        dimensions,
+        sku,
         weight,
-        warranty,
-        manufacturer,
-        supplier,
-        sales,
+        dimensions,
+        warrantyInformation,
+        shippingInformation,
+        availabilityStatus,
+        returnPolicy,
+        minimumOrderQuantity,
+        meta,
+        reviews,
         sellerId, // Assume sellerId is passed for testing
         role // Assume role is passed for testing
     } = req.body;
 
     try {
         // Validate required fields
-        if (!name || !description || !price || !stock || !imageUrl) {
+        if (!title || !description || !price || !stock || !images || !thumbnail) {
             return res.status(400).json({ message: 'Required fields are missing' });
         }
 
@@ -35,21 +41,27 @@ const createProduct = async (req, res) => {
 
         // Create a new product
         const newProduct = new ProductModel({
-            name,
+            title,
             description,
             price,
+            discountPercentage,
+            rating,
             stock,
-            rating: rating || 0, // Default to 0 if not provided
-            imageUrl,
+            images,
+            thumbnail,
             category,
             brand,
             tags,
-            dimensions,
+            sku,
             weight,
-            warranty,
-            manufacturer,
-            supplier,
-            sales,
+            dimensions,
+            warrantyInformation,
+            shippingInformation,
+            availabilityStatus,
+            returnPolicy,
+            minimumOrderQuantity,
+            meta,
+            reviews,
             sellerId: role === 'SELLER' ? sellerId : undefined // Only set sellerId if user is a seller
         });
 
@@ -65,6 +77,7 @@ const createProduct = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 // Product Updating Controller
 const updateProduct = async (req, res) => {
@@ -127,8 +140,6 @@ const updateProduct = async (req, res) => {
         return res.status(500).json({ message: 'Server error' });
     }
 };
-
-
 
 
 // Delete Product Controller
